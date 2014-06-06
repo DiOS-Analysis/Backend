@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>DiOS</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="description" content=""/>
+		<meta name="author" content=""/>
+
+		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="bootstrap/css/bootstrap-notify.css" rel="stylesheet"/>
+		<link href="datatable/css/DT_bootstrap.css" rel="stylesheet" />
+		<link href="datatable/css/ColReorder.css" rel="stylesheet" />
+		<style>
+		  body {
+		    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+		  }
+		</style>
+		<link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+	</head>
+
+	<body>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="brand" href="./">DiOS</a>
+					<div class="nav-collapse in collapse">
+					  	<ul class="nav" data-toggle="buttons-radio">
+					      	<li id="btnScheduler" class="navBtn active"><a href="#scheduler">Scheduler</a></li>
+					    </ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- psuedo html notification element -->
+		<div class='notifications center'></div>
+
+ 		<div class="container">
+			<div class="row">
+			    <div class="span12">
+
+					<h3>AppStore Scheduler</h3>
+					<div>
+						<form class="form-inline" action="javascript:void(0);" onsubmit="$('#btn-update').click();">
+							<select id="select-storeCountry">
+								<option value="de" selected>Germany</option>
+								<option value="us">United States</option>
+							</select>
+							<input id="input-limit" class"input-mini" style="max-width:40px;" type="number" min="2" value="10" />
+						</form>
+					</div>
+				</div>
+				<div id="feeds-options" class="span12">
+<!--					<h4>RSS-Feeds</h4>-->
+					<legend>RSS-Feed</legend>
+					<form class="form-inline">
+						<select id="select-feedType">
+							<option value="topfreeapplications" selected>Top Free Apps</option>
+							<option value="toppaidapplications">Top Paid Apps</option>
+							<option value="topgrossingapplications">Top Grossing Apps</option>
+							<option value="topfreeipadapplications">Top Free iPad Apps</option>
+							<option value="toppaidipadapplications">Top Paid iPad Apps</option>
+							<option value="topgrossingipadapplications">Top Grossing iPad Apps</option>
+							<option value="newapplications">New Apps</option>
+							<option value="newfreeapplications">New Free Applications</option>
+							<option value="newpaidapplications">New Paid Applications</option>
+						</select>		
+						<select id="select-genre">
+							<option value="" selected>All Genres</option>
+							<option value="6018">Books</option>
+							<option value="6000">Business</option>
+							<option value="6022">Catalogs</option>
+							<option value="6017">Education</option>
+							<option value="6016">Entertainment</option>
+							<option value="6015">Finance</option>
+							<option value="6023">Food &amp; Drink</option>
+							<option value="6014">Games</option>
+							<option value="6013">Health &amp; Fitness</option>
+							<option value="6012">Lifestyle</option>
+							<option value="6020">Medical</option>
+							<option value="6011">Music</option>
+							<option value="6010">Navigation</option>
+							<option value="6009">News</option>
+							<option value="6021">Newsstand</option>
+							<option value="6008">Photo &amp; Video</option>
+							<option value="6007">Productivity</option>
+							<option value="6006">Reference</option>
+							<option value="6005">Social Networking</option>
+							<option value="6004">Sports</option>
+							<option value="6003">Travel</option>
+							<option value="6002">Utilities</option>
+							<option value="6001">Weather</option>
+						</select>
+						<div id="btn-update" class="btn"><i class="icon-repeat"></i> Update</div>	
+					</form>
+				</div>
+				<div id="search-options" class="span12">
+<!--					<h4>Search</h4>-->
+					<legend>Search</legend>
+					<form class="form-inline" action="javascript:void(0);" onsubmit="$('#btn-search').click();">
+						<input id="input-search" class"" type="text" value="" placeholder="query"/>
+						<div id="btn-search" class="btn"><i class="icon-search"></i> Search</div>	
+					</form>
+				</div>
+			</div>
+
+			<div class="row">
+				<div id="tableContainer" class="span12 dataContainer">
+					<div class="row-fluid">
+					  <h3 id="tableHeadline" class="dataHeadline">Results
+						  <div class="btn-group" style="margin-left:25px;">
+						  	<button class="btn installAll"><i class="icon-share"></i></button>
+						  	<button class="btn executeAll"><i class="icon-play"></i></button>
+						  </div>
+					  </h3>
+					</div>
+			  		<div id="tableRoot">
+				  	</div>
+				 </div>
+			</div>
+		</div> <!-- /container -->
+		<div id="hiddenElements" style="display:none;">
+			<!-- hidden device select -->
+			<div id="deviceSelectTemplate">
+				<select class="deviceSelect" style="margin-bottom: 10px;">
+					<option selected value="">any</option>		
+				</select>
+			</div>
+			<!-- hidden popover template -->
+			<div id="popoverTemplate">
+				<form>
+					<input class="bundleId" name="bundleId" type="hidden"></input>
+					<div class="deviceInput">
+						<label class="control-label">Device</label>
+						<select class="deviceSelect" style="margin-bottom: 10px;">
+							<option selected value="">any</option>		
+						</select>
+					</div>
+					<div class="executionStrategyInput" style="display: none">
+						<label class="control-label">Execution strategy</label>
+						<select class="executionStrategySelect" style="margin-bottom: 10px;">
+							<option selected value="DefaultExecution">DefaultExecution</option>
+							<option value="OpenCloseExecution">OpenCloseExecution</option>
+							<option value="RandomExecution">RandomExecution</option>
+							<option value="SmartExecution">SmartExecution</option>
+						</select>
+					</div>
+					<div class="accountInput">
+						<label class="control-label">Account</label>
+						<select class="accountSelect" style="margin-bottom: 10px;">
+							<option selected value="">any</option>		
+						</select>
+					</div>
+					<div onclick='' style="margin:10px" class="btn btn-primary pull-right">Submit</div>
+				</form>
+			</div>
+		</div>
+
+	    <!-- Placed at the end of the document so the pages load faster -->
+	    <script src="bootstrap/js/jquery.js"></script>
+		<script src="bootstrap/js/bootstrap.min.js"></script>
+		<script src="bootstrap/js/bootstrap-notify.js"></script>
+		<script src="datatable/js/jquery.dataTables.min.js"></script>
+		<script src="datatable/js/DT_bootstrap.js"></script>
+		<script src="datatable/js/ColReorder.min.js"></script>
+		<script src="script.js"></script>
+		<script>
+			
+			var results = [];
+			
+			function currentFeedUrl() {
+				storeCountry = $('#select-storeCountry').val();
+				feedType = $('#select-feedType').val();
+				feedGenre = $('#select-genre').val();
+				limit = $('#input-limit').val();
+				return "https://itunes.apple.com/" + storeCountry + "/rss/" + feedType + "/limit=" + limit + "/genre=" + feedGenre + "/json"
+			}
+			
+			function currentSearchUrl() {
+				storeCountry = $('#select-storeCountry').val();
+				limit = $('#input-limit').val();
+				term = $('#input-search').val();
+				return "https://itunes.apple.com/" + storeCountry + "/search?entity=software&term=" + term + "&limit=" + limit + "&callback=?";
+				//use JSONP to get around orign policy
+			}
+
+			function updateResults(url) {
+				$.getJSON(url, function(data) {
+					if ('feed' in data) {
+						results = data.feed.entry;						
+					} else if ('results' in data) {
+						results = data.results;
+					}
+					table(results,currColModel);
+				});
+			}
+
+			// Table coloumn models
+			feedColModel = [
+				{'sTitle':'actions', 'mData': null, 'mRender': renderAppActions},
+				{'sTitle':'icon', 'mData':'im:image.0.label', 'mRender': renderImage},
+				{'sTitle':'name', 'mData':'im:name.label'},
+				{'sTitle':'bundleId', 'mData':'id.attributes.im:bundleId'},
+				{'sTitle':'trackId', 'mData':'id.attributes.im:id'},
+				// {'sTitle':'version', 'mData':'version'},
+				{'sTitle':'company', 'mData':'im:artist.label'},
+				{'sTitle':'price', 'mData':'im:price.label'},
+				// {'sTitle':'currency', 'mData':'im:price.attributes.currency'},
+				{'sTitle':'genre', 'mData':'category.attributes.label'},
+				{'sTitle':'releaseDate', 'mData':'im:releaseDate.attributes.label'},
+			];
+			searchColModel = [
+				{'sTitle':'actions', 'mData': null, 'mRender': renderAppActions},
+				{'sTitle':'icon', 'mData':'artworkUrl60', 'mRender': renderImage},
+				{'sTitle':'name', 'mData':'trackName'},
+				{'sTitle':'bundleId', 'mData':'bundleId'},
+				{'sTitle':'trackId', 'mData':'trackId'},
+				// {'sTitle':'version', 'mData':'version'},
+				{'sTitle':'company', 'mData':'sellerName'},
+				{'sTitle':'price', 'mData':'formattedPrice'},
+				// {'sTitle':'currency', 'mData':'currency'},
+				{'sTitle':'genres', 'mData':'genres.[, ]'},
+				{'sTitle':'releaseDate', 'mData':'releaseDate'},
+			];
+			var currColModel = feedColModel;
+
+			var dataTable = null;
+			function table(aaData, aoColumns) {
+				if (dataTable != null) {
+					$('#dataTable').dataTable().fnDestroy(true);
+				}
+
+				$('#tableRoot').append('<table id="dataTable" class="table table-striped table-bordered" style="width:100%;"></table>');
+
+				tableOptions = {
+					"sDom": "R<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"bProcessing": true,
+					"aoColumns": aoColumns,
+					"aaData": aaData,
+					// "bAutoWidth": true,
+					"bSort": true,
+					"bDestroy": true, //enable replacing
+				}
+
+				dataTable = $('#dataTable').dataTable(tableOptions);
+				
+				//setup tooltips for actions
+				$('.installApp').tooltip({'placement':'right', 'title':'install app on device'});
+				$('.executeApp').tooltip({'placement':'right', 'title':'execute app on device'});
+
+				//add popover to schedule a app installation
+				$('.installApp').popover({
+					'title': 'Install App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'installAppOnDeviceFormSubmit($(this).parent())');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';					
+						return html;
+					}
+				});
+				$('.executeApp').popover({
+					'title': 'Execute App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'executeAppOnDeviceFormSubmit($(this).parent())');
+						popover.find('.executionStrategyInput').css('display', 'block');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';						
+						return html;
+					}
+				});
+			}
+
+
+			$(document).ready(function() {
+				loadDevices();
+				loadAccounts();
+				$('#btn-update').click(function(){
+					currColModel = feedColModel;
+					updateResults(currentFeedUrl());
+				});
+				$('#btn-update').click();
+				$('#btn-search').click(function(){
+					currColModel = searchColModel;
+					updateResults(currentSearchUrl());
+				});
+				
+				//setup tooltips for result-actions
+				$('.installAll').tooltip({'placement':'bottom', 'title':'install all apps on device'});
+				$('.executeAll').tooltip({'placement':'bottom', 'title':'execute all apps on device'});
+
+				// setup popovers for device selection
+				$('.installAll').popover({
+					'title': 'Install all Apps',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.btn-primary').attr('onclick', 'installAllAppsOnDeviceFormSubmit($(this).parent())');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';						
+						return html;
+					}
+				});
+				$('.executeAll').popover({
+					'title': 'Execute all Apps',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.btn-primary').attr('onclick', 'executeAllAppsOnDeviceFormSubmit($(this).parent())');
+						popover.find('.executionStrategyInput').css('display', 'block');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';						
+						return html;
+					}
+				});
+			});
+			
+			function renderAppActions( data, type, full ) {
+				bundleid = valueFromObject(full, currBundleIdPath());
+				return '<div class="btn-toolbar" style="text-align:center;"> \
+					<div class="btn-group  btn-group-vertical"> \
+						<a class="btn installApp" data-bundleid="' + bundleid + '"><i class="icon-share"></i></a> \
+						<a class="btn executeApp" data-bundleid="' + bundleid + '"><i class="icon-play"></i></a> \
+					</div> \
+				</div>'
+			}
+			
+			function currBundleIdPath() {
+				path = "";
+				for (i=0; i<currColModel.length; i++) {
+					if (currColModel[i].sTitle == 'bundleId') {
+						path = currColModel[i].mData;
+						break;
+					}
+				}
+				return path;
+			}
+				
+		</script>
+	</body>
+</html>

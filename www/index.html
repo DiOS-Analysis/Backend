@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>DiOS</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="description" content=""/>
+		<meta name="author" content=""/>
+
+		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="bootstrap/css/bootstrap-notify.css" rel="stylesheet"/>
+		<link href="datatable/css/DT_bootstrap.css" rel="stylesheet" />
+		<link href="datatable/css/ColReorder.css" rel="stylesheet" />
+		<style>
+			body {
+		    	padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+			}
+			.popover {
+				width: auto;
+				min-width: 236px;
+				max-width: 700px;
+			}
+		</style>
+		<link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"/>
+	</head>
+
+	<body>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="brand" href="#">DiOS</a>
+					<div class="nav-collapse in collapse">
+					  	<ul class="nav" data-toggle="buttons-radio">
+						  	<li id="btnShowScheduler" class="nav navBtn">
+								<a class="dropdown-toggle" id="schedulerDropdown" role="button" data-toggle="dropdown" data-target="#">
+									Schedule Job
+									<b class="caret"></b>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="criteriaDropdown">
+									<li id="btnScheduler" class="navBtn"><a  tabindex="-1" href="scheduler.html">Scheduler</a></li>
+									<li id="btnAddJob" class="navBtn"><a  tabindex="-1" href="#addJob">Add Job</a></li>
+								</ul>
+							</li>
+					      	<li id="btnShowJobs" class="navBtn"><a href="#jobs">Jobs</a></li>
+					      	<li class="divider-vertical"></li>
+					      	<li id="btnShowApps" class="navBtn"><a href="#apps">Apps</a></li>
+					      	<li id="btnShowRuns" class="navBtn"><a href="#runs">Runs</a></li>
+					      	<li id="btnShowResults" class="navBtn"><a href="#results">Results</a></li>
+					      	<li class="divider-vertical"></li>
+							<li id="btnShowCriteria" class="nav navBtn">
+								<a href="criteria.html#criteria" class="dropdown-toggle" id="criteriaDropdown" role="button" data-toggle="dropdown" data-target="#">
+									Criteria
+									<b class="caret"></b>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="criteriaDropdown">
+									<li><a tabindex="-1" href="criteria.html#criteria">full list</a></li>
+									<li><a tabindex="-1" href="criteria.html#criteriaGrouped">grouped by app</a></li>
+								</ul>
+							</li>
+							<li class="divider-vertical"></li>
+					      	<li id="btnShowAccounts" class="navBtn"><a href="#accounts">Accounts</a></li>
+					      	<li id="btnShowDevices" class="navBtn"><a href="#devices">Devices</a></li>
+					      	<li id="btnShowWorkers" class="navBtn"><a href="#workers">Workers</a></li>
+					    </ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- psuedo html notification element -->
+		<div class='notifications center'></div>
+
+ 		<div class="container">
+			<div id="addJob" class="row" style="display: none;">
+			    <div class="span6">
+
+					<h3>Add Job</h3>
+
+					<legend>Submit an App execution Job to the DiOS Backend</legend>
+					<form id="addJobForm" class="form-horizontal" action="">
+					  	<div class="control-group">
+				        	<label class="control-label" for="bundleId">Bundle identifier</label>
+				        	<div class="controls">
+				        		<input name="bundleId" type="text" placeholder="com.company.app"/>
+				        	</div>
+				        </div>
+
+				        <div id="versionGroup" class="control-group">
+				        	<label class="control-label" for="storecountry">Version</label>
+				        	<div class="controls">
+				        	  <input id="version" name="version" type="text" placeholder="any" class="input-mini"/>
+				        	</div>
+				        </div>
+
+				        <div class="control-group">
+							<label class="control-label">Store</label>
+							<div class="controls">
+			        			<label class="radio">
+			        				<input type="radio" name="storeRadio" id="AppStoreRadio" value="AppStoreApp" checked/> AppStore
+			        			</label>
+			        			<label class="radio">
+				        			<input type="radio" name="storeRadio" id="CydiaRadio" value="CydiaApp"/> Cydia
+				        		</label>
+			        		</div>
+						</div>
+
+					    <div id="storecountryGroup" class="control-group appStoreOnly">
+					        <label class="control-label" for="storecountry">Store country</label>
+					        <div class="controls">
+							  <input name="storecountry" type="text" placeholder="de" value="de" class="input-mini"/>
+					        </div>
+					    </div>
+	
+						<div id="accountSelectGroup" class="control-group appStoreOnly">
+					    	<label class="control-label" for="account">User account</label>
+					    	<div class="controls">
+					    		<select name="account" class="accountSelect">
+						    		<option selected value="">any</option>
+						    	</select>
+						    	<span id="accountWarning" style="display:none;" class="help-block">The selected account is not available on the selected device</span>
+					    	</div>
+					    </div>
+
+						<div id="deviceSelectGroup" class="control-group">
+							<label class="control-label" for="device">Device</label>
+							<div class="controls">
+								<select name="device" class="deviceSelect">
+									<option selected value="">any</option>
+								</select>
+							</div>
+						</div>
+
+						<div id="workerSelectGroup" class="control-group">
+							<label class="control-label" for="worker">Worker</label>
+					    	<div class="controls">
+					    		<select name="worker" class="workerSelect">
+					    			<option selected value="">any</option>
+					    		</select>
+					    		<span class="help-block">Should be 'any' unless you are really sure that the device is always connected to the selected worker</span>
+					    	</div>
+					    </div>
+
+						<div id="executionStrategySelectGroup" class="control-group">
+							<label class="control-label" for="executionStrategy">Execution strategy</label>
+							<div class="controls">
+								<select name="executionStrategy" class="executionStrategySelect">
+									<option selected value="DefaultExecution">DefaultExecution</option>
+									<option value="OpenCloseExecution">OpenCloseExecution</option>
+									<option value="RandomExecution">RandomExecution</option>
+									<option value="SmartExecution">SmartExecution</option>
+								</select>
+							</div>
+						</div>
+	
+				        <div class="control-group">
+					        <div class="controls">
+						        <div id="submitAddJobFormBtn" class="btn btn-primary">Submit</div>
+						    </div>
+						</div>
+					</form>
+				</div>
+				<div class="span4">
+					<div class="alert alert-info">
+					  <button type="button" class="close" data-dismiss="alert">&times;</button>
+					  <h4>Advanced Scheduler</h4>
+					  <div>The advanced scheduler allows easy scheduling of install and execution jobs using iTunes Store RSS-Feeds or search results <a href="scheduler.html">(-> scheduler)</a>.</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div id="tableContainer" class="offset0 span dataContainer" style="display: none; width:100%;">
+			  		<h3 id="tableHeadline" class="dataHeadline"></h3>
+			  		<div id="tableRoot">
+						<!--<table id="dataTable"></table>-->
+				  	</div>
+					<div class="btn-group" style="margin-top:20px; margin-bottom:50px;">
+						<button class="btn" onclick="showList()">show JSON</button>
+					</div>
+				 </div>
+			</div>
+
+			<div class="row">
+			  <div id="listContainer" class="span10 dataContainer" style="display: none;">
+			  	<h3 id="listHeadline" class="dataHeadline"></h3>
+			  	<div>
+			  		<pre id="listContent" style="word-break: normal;">
+			  		</pre>
+			  	</div>
+			 	</div>
+			</div>
+		</div> <!-- /container -->
+
+		<div id="hiddenElements" style="display:none;">
+			<!-- hidden popover template -->
+			<div id="popoverTemplate">
+				<form>
+					<input class="bundleId" name="bundleId" type="hidden"></input>
+					<div class="deviceInput">
+						<label class="control-label">Device</label>
+						<select class="deviceSelect" style="margin-bottom: 10px;">
+							<option selected value="">any</option>		
+						</select>
+					</div>
+					<div class="executionStrategyInput" style="display: none">
+						<label class="control-label">Execution strategy</label>
+						<select class="executionStrategySelect" style="margin-bottom: 10px;">
+							<option selected value="DefaultExecution">DefaultExecution</option>
+							<option value="OpenCloseExecution">OpenCloseExecution</option>
+							<option value="RandomExecution">RandomExecution</option>
+							<option value="SmartExecution">SmartExecution</option>
+						</select>
+					</div>
+					<div class="accountInput">
+						<label class="control-label">Account</label>
+						<select class="accountSelect" style="margin-bottom: 10px;">
+							<option selected value="">any</option>		
+						</select>
+					</div>
+					<div onclick='' style="margin:10px" class="btn btn-primary pull-right">Submit</div>
+				</form>
+			</div>
+		</div>
+
+
+	    <!-- Placed at the end of the document so the pages load faster -->
+		<script src="script.js"></script>
+	    <script src="bootstrap/js/jquery.js"></script>
+	    <script src="bootstrap/js/bootstrap.min.js"></script>
+		<script src="bootstrap/js/bootstrap-notify.js"></script>
+		<script src="datatable/js/jquery.dataTables.min.js"></script>
+		<script src="datatable/js/DT_bootstrap.js"></script>
+		<script src="datatable/js/ColReorder.min.js"></script>
+		<script>
+
+			//jump to anchor
+			function changeView() {
+				var hash = location.hash.slice(1);
+
+				if (hash === 'addJob' || hash === '') {
+					showAddJob();
+				} else {
+					show(hash);
+				}
+			}
+			window.onhashchange = changeView;
+			$(document).ready(function() {
+				changeView();
+			});
+
+
+			/*
+			 - `type`: `OR('run_app', 'install_app')`
+			 - `state`: the jobs state
+			 - `jobInfo`
+			   - `appType`: `OR('AppStoreApp', 'CydiaApp')`
+			   - `bundleId`: the apps bundleID
+			   - `storeCountry`: two letter country code
+			   - `accountId`: the accounts id (optional)
+			   - `version`: the app version (defaults to the latest)
+			   - `executionStrategy`: OR('DefaultExecution', 'OpenCloseExecution', 'RandomExecution', 'SmartExecution')
+			 - `worker`: the worker
+			 - `device`: the device
+			*/
+			var deviceData = {};
+
+			//AddApp
+			$("#addJobForm").submit(function(event) {
+
+				/* stop form from submitting normally */
+				event.preventDefault();
+			});
+			$('#submitAddJobFormBtn').click(function(){
+				var jobInfo={};
+
+				jobInfo['bundleId'] = $("#addJobForm").find('input[name="bundleId"]').val();
+
+				jobInfo['appType'] = $("#addJobForm").find('input[name="storeRadio"]:checked').val();
+
+				if (jobInfo['appType'] == "AppStoreApp") {
+					storeCountry = $("#addJobForm").find('input[name="storecountry"]').val();
+					if (storeCountry != "") {
+						jobInfo['storeCountry'] = storeCountry;
+					}
+				}
+
+				account = $('.accountSelect').val();
+				if (account != '' && account != 'any') {
+					jobInfo['accountId'] = account;
+				}
+
+				version = $('#version').val();
+				if (version != '' && version != 'any') {
+					jobInfo['version'] = version;
+				}
+				
+				executionStrategy = $('.executionStrategySelect').val();
+				if (executionStrategy != '') {
+					jobInfo['executionStrategy'] = executionStrategy;
+				}				
+
+				var data = {
+					'type':'run_app',
+					'state':'pending',
+					'jobInfo':jobInfo
+				};
+
+				worker = $('.workerSelect').val();
+				if (worker != '' && worker != 'any') {
+					data['worker'] = worker;
+				}
+
+				device = $('.deviceSelect').val();
+				if (device != '' && device != 'any') {
+					data['device'] = device;
+				}
+
+				submitJob(data);
+			});
+
+			function showAddJob() {
+				$('.navBtn').removeClass('active');
+				$('#btnShowScheduler').addClass('active');
+				$('#btnAddJob').addClass('active');
+
+				// $("#listContainer").fadeOut(200);
+				$(".dataContainer").fadeOut(200);
+
+				$("#addJob").delay(200).fadeIn();
+			}
+
+			function showList(name) {
+				if (name == undefined) {
+					name = $('.navBtn.active').find('a').attr('href').substr(1)
+				}
+				nameUpper = name.charAt(0).toUpperCase() + name.slice(1)
+				$('.navBtn').removeClass('active');
+				$('#btnShow' + nameUpper).addClass('active');
+
+				$("#addJob").fadeOut(200);
+				$("#listContainer").delay(200).fadeOut(200, function() {
+					$("#listHeadline").text('List of ' + name);
+					$('#listContent').text("");
+					$.getJSON(name, function(data) {
+						$('#listContent').text(JSON.stringify(data, null, '  '));
+					});
+					$("#listContainer").fadeIn();
+				});
+			}
+
+
+
+			$('input[name="storeRadio"]').click(function() {
+				var store = $(this).val();
+				if (store == "AppStoreApp") {
+					$('.appStoreOnly').slideDown();
+				} else {
+					$('.appStoreOnly').slideUp();
+				}
+			});
+
+			function checkAccountSelection() {
+				accSel = $('.accountSelect')
+				$(accSel).find('option').removeAttr('disabled')
+				deviceValue = $('.deviceSelect').val()
+				if (deviceValue == '') {
+					return
+				}
+				showWarning = false;
+				$.each($(accSel).find('option[value!=""]'), function(i, entry) {
+					if (-1 == $.inArray($(entry).attr('value'), deviceData[deviceValue]['accounts'])) {
+						if ($(accSel).val() == $(entry).attr('value')) {
+							showWarning = true;
+						}
+					}
+				});
+				if (showWarning) {
+					$('#accountSelectGroup').addClass('warning');
+					$('#accountWarning').slideDown();
+				} else {
+					$('#accountWarning').slideUp();
+					$('#accountSelectGroup').removeClass('warning');
+				}
+			}
+			$('.deviceSelect').change(checkAccountSelection);
+			$('.accountSelect').change(checkAccountSelection);
+
+
+
+			function renderDate( data, type, full ) {
+//				return new Date(1000*data).toLocaleString();
+				return new Date(1000*data).toString();
+			}
+
+			function renderResultInfoData( data, type, full ) {
+				if (data === 'APP_ARCHIVE' || data === 'TCPDUMP') {
+					return '<a href="results/' + full['_id'] + '/binary">' + data + '<i class="icon-download"></i></a>'
+				} else if (full.resultInfo.type === 'stacktrace') {
+					return 'Stacktraces not displayed';
+				} else if (typeof data === 'object') {
+					return '<pre>' + JSON.stringify(data, null, '  ') + '</pre>';
+				} else {
+					return '<pre>' + data + '</pre>';
+				}
+			}
+
+			function renderJobActions( data, type, full ) {
+				
+				return '<div class="btn-toolbar" style="text-align:center;"> \
+					<div class="btn-group  btn-group-vertical"> \
+						<a class="btn rescheduleJob" onclick="rescheduleJob(\'' + full._id + '\')"><i class="icon-refresh"></i></a> \
+						<a class="btn jobInfo" data-jobinfo=\'' + JSON.stringify(full.jobInfo) + '\'><i class="icon-info-sign"></i></a> \
+					</div> \
+				</div>'
+			}
+
+			function renderAppActions( data, type, full ) {
+				
+				return '<div class="btn-toolbar" style="text-align:center;"> \
+					<div class="btn-group  btn-group-vertical"> \
+						<a class="btn installApp" data-bundleid="' + full.bundleId + '"><i class="icon-share"></i></a> \
+						<a class="btn executeApp" data-bundleid="' + full.bundleId + '"><i class="icon-play"></i></a> \
+						<a class="btn downloadApp" href="apps/' + full['_id'] + '/ipa"><i class="icon-download"></i></a> \
+					</div> \
+				</div>'
+			}
+			
+			// some "fnCreatedCell" formatting functions
+			function setStateColor(nTd, sData, oData, iRow, iCol) {
+				color = null;
+				switch (sData) {
+					case "undefined":
+						color = 'blue';
+						break;
+					case "pending":
+						color = 'lightseagreen';
+						break;
+					case "running":
+						color = 'green';
+						break;
+					case "failed":
+						color = 'red';
+						break;
+				}
+				if (color) {
+				  $(nTd).parent().css('color', color);
+				}
+			}
+			// Table coloumn models
+
+			jobsColModel = [
+				{'sTitle':'actions', 'mData': null, 'mRender': renderJobActions},
+				{'sTitle':'id', 'mData':'_id'},
+				{'sTitle':'type', 'mData':'type'},
+				{'sTitle':'state', 'mData':'state', 'fnCreatedCell': setStateColor},
+				{'sTitle':'account', 'mData':'jobInfo.accountId', 'sDefaultContent': ''},
+				{'sTitle':'bundleId', 'mData':'jobInfo.bundleId', 'sDefaultContent': ''},
+				{'sTitle':'storeCountry', 'mData':'jobInfo.storeCountry', 'sDefaultContent': ''},
+				{'sTitle':'appType', 'mData':'jobInfo.appType', 'sDefaultContent': ''},
+				{'sTitle':'worker', 'mData':'worker'},
+				{'sTitle':'device', 'mData':'device'},
+				{'sTitle':'date_added', 'mData':'date_added', 'sType': 'date', 'sWidth':'200px', 'mRender': renderDate},
+			];
+
+			appsColModel = [
+				{'sTitle':'actions', 'mData': null, 'mRender': renderAppActions},
+				{'sTitle':'icon', 'mData':'artworkUrl60', 'mRender': renderImage},
+				{'sTitle':'id', 'mData':'_id'},
+				{'sTitle':'name', 'mData':'name'},
+				{'sTitle':'bundleId', 'mData':'bundleId'},
+				{'sTitle':'version', 'mData':'version'},
+				{'sTitle':'company', 'mData':'artistName'},
+				{'sTitle':'account', 'mData':'account'},
+				{'sTitle':'price', 'mData':'price', 'sDefaultContent': ''},
+				{'sTitle':'currency', 'mData':'currency', 'sDefaultContent': ''},
+				{'sTitle':'genre', 'mData':'primaryGenreName'},
+				{'sTitle':'releaseDate', 'mData':'releaseDate'},
+				{'sTitle':'rating', 'mData':'averageUserRating', 'sDefaultContent': ''},
+				{'sTitle':'ratingCount', 'mData':'userRatingCount', 'sDefaultContent': ''},
+				{'sTitle':'size', 'mData':'fileSizeBytes', 'sDefaultContent': ''},
+				{'sTitle':'date_added', 'mData':'date_added', 'sType': 'date', 'mRender': renderDate},
+			];
+
+			runsColModel = [
+				{'sTitle':'id', 'mData':'_id'},
+				{'sTitle':'appId', 'mData':'app'},
+				{'sTitle':'execution strategy', 'mData':'executionStrategy', 'sDefaultContent': ''},
+				{'sTitle':'state', 'mData':'state', 'fnCreatedCell': setStateColor},
+				{'sTitle':'date_added', 'mData':'date_added', 'sType': 'date', 'mRender': renderDate},
+			];
+
+			resultsColModel = [
+				{'sTitle':'id', 'mData':'_id'},
+				{'sTitle':'runId', 'mData':'run'},
+				{'sTitle':'type', 'mData':'resultInfo.type'},
+				{'sTitle':'data', 'mData':'resultInfo.data', 'mRender': renderResultInfoData, 'sDefaultContent': '', 'sWidth': '400px'},
+				{'sTitle':'date_added', 'mData':'date_added', 'sType': 'date', 'mRender': renderDate},
+			];
+
+			accountsColModel = [
+				{'sTitle':'uid', 'mData':'uniqueIdentifier'},
+				{'sTitle':'AppleId', 'mData':'appleId'},
+				{'sTitle':'store country', 'mData':'storeCountry'},
+			];
+
+			devicesColModel = [
+				{'sTitle':'uuid', 'mData':'uuid'},
+				{'sTitle':'name', 'mData':'deviceInfo.DeviceName'},
+				{'sTitle':'accounts', 'mData':'accounts', 'mRender': '[, ]'},
+				{'sTitle':'type', 'mData':'deviceInfo.ProductType'},
+				{'sTitle':'arch', 'mData':'deviceInfo.CPUArchitecture'},
+			];
+
+			workersColModel = [
+				{'sTitle':'id', 'mData':'_id'},
+				{'sTitle':'name', 'mData':'name'},
+			];
+
+			currColModel = [];
+
+
+			var dataTable = null;
+			function table(url, aoColumns) {
+				if (dataTable != null) {
+					$('#dataTable').dataTable().fnDestroy(true);
+				}
+
+				$('#tableRoot').append('<table id="dataTable" class="table table-striped table-bordered" style="width:100%;"></table>');
+				aaData = [];
+				$.getJSON(url, function(data) {
+					if (typeof data === 'object') {
+						//strip keys: data=data.values()
+						arr = [];
+						$.each(Object.keys(data), function(index,key) {
+							arr.push(data[key]);
+						})
+						data = arr;
+					}
+					aaData = data;
+
+				}).complete(function() {
+					tableOptions = {
+						"sDom": "R<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+						"bProcessing": true,
+						"aoColumns": aoColumns,
+						"aaData": aaData,
+						"bSort": true,
+						"bDestroy": true, //enable replacing
+						"fnDrawCallback": setupActions,
+					}
+					// sort by date_added if present
+					for (i = aoColumns.length-1; i >= 0; i--) {
+						if (aoColumns[i].mData == "date_added") {
+							tableOptions["aaSorting"] = [[ i, "desc" ]];
+							break;
+						}
+					}
+					dataTable = $('#dataTable').dataTable(tableOptions);
+				});
+			}
+			
+			function setupActions() {
+
+				//setup tooltips for actions
+				$('.rescheduleJob').tooltip({'placement':'right', 'title':'reschedule as new job'});
+				$('.jobInfo').tooltip({'placement':'right', 'title':'show jobInfo'});
+				$('.downloadApp').tooltip({'placement':'right', 'title':'download app ipa'});
+				$('.installApp').tooltip({'placement':'right', 'title':'install app on device'});
+				$('.executeApp').tooltip({'placement':'right', 'title':'execute app on device'});
+				
+				$('.jobInfo').popover({
+					'title': 'jobInfo',
+					'html': true,
+					'content': function() {
+						var jobInfo = $(this).data('jobinfo')
+						html = '<pre style="width:600px;">';
+						html += JSON.stringify(jobInfo, null, '  ');
+						html += '</pre>';					
+						return html;
+					}
+				});
+				
+				//add popover to schedule a app installation
+				$('.installApp').popover({
+					'title': 'Install App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'installAppOnDeviceFormSubmit($(this).parent())');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';					
+						return html;
+					}
+				});
+				$('.executeApp').popover({
+					'title': 'Execute App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'executeAppOnDeviceFormSubmit($(this).parent())');
+						popover.find('.executionStrategyInput').css('display', 'block');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';						
+						return html;
+					}
+				});
+			}
+
+			function show(name) {
+				$(".dataContainer").delay(200).fadeOut(200);
+				showTable(name);
+			}
+
+			function showTable(name) {
+				nameUpper = name.charAt(0).toUpperCase() + name.slice(1)
+				$('.navBtn').removeClass('active');
+				$('#btnShow' + nameUpper).addClass('active');
+
+				$("#addJob").fadeOut(200);
+				$("#tableContainer").delay(200).fadeOut(200, function() {
+					$("#tableHeadline").text(name);
+					$('#flexTable').text("");
+					colModel = window[name+'ColModel']
+					if (colModel == undefined) {
+						colModel = [];
+					}
+					table(name, colModel)
+					$("#tableContainer").fadeIn();
+				});
+			}
+
+			$(document).ready(function() {
+				loadAccounts();
+				loadWorkers();
+				loadDevices();
+			});
+		</script>
+	</body>
+</html>
