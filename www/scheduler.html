@@ -241,42 +241,12 @@
 					// "bAutoWidth": true,
 					"bSort": true,
 					"bDestroy": true, //enable replacing
+					"fnDrawCallback": setupActions,
 				}
 
 				dataTable = $('#dataTable').dataTable(tableOptions);
-				
-				//setup tooltips for actions
-				$('.installApp').tooltip({'placement':'right', 'title':'install app on device'});
-				$('.executeApp').tooltip({'placement':'right', 'title':'execute app on device'});
+				setupActions();
 
-				//add popover to schedule a app installation
-				$('.installApp').popover({
-					'title': 'Install App',
-					'html': true,
-					'content': function() {
-						var popover = $('#popoverTemplate').clone();
-						popover.find('.bundleId').val($(this).data('bundleid'));
-						popover.find('.btn-primary').attr('onclick', 'installAppOnDeviceFormSubmit($(this).parent())');
-						html = '<div>';
-						html += popover.html();
-						html += '</div>';					
-						return html;
-					}
-				});
-				$('.executeApp').popover({
-					'title': 'Execute App',
-					'html': true,
-					'content': function() {
-						var popover = $('#popoverTemplate').clone();
-						popover.find('.bundleId').val($(this).data('bundleid'));
-						popover.find('.btn-primary').attr('onclick', 'executeAppOnDeviceFormSubmit($(this).parent())');
-						popover.find('.executionStrategyInput').css('display', 'block');
-						html = '<div>';
-						html += popover.html();
-						html += '</div>';						
-						return html;
-					}
-				});
 			}
 
 
@@ -345,7 +315,42 @@
 				}
 				return path;
 			}
-				
+
+			function setupActions() {
+				//setup tooltips for actions
+				$('.installApp').tooltip({'placement':'right', 'title':'install app on device'});
+				$('.executeApp').tooltip({'placement':'right', 'title':'execute app on device'});
+
+				//add popover to schedule a app installation
+				$('.installApp').popover({
+					'title': 'Install App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'installAppOnDeviceFormSubmit($(this).parent())');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';					
+						return html;
+					}
+				});
+				$('.executeApp').popover({
+					'title': 'Execute App',
+					'html': true,
+					'content': function() {
+						var popover = $('#popoverTemplate').clone();
+						popover.find('.bundleId').val($(this).data('bundleid'));
+						popover.find('.btn-primary').attr('onclick', 'executeAppOnDeviceFormSubmit($(this).parent())');
+						popover.find('.executionStrategyInput').css('display', 'block');
+						html = '<div>';
+						html += popover.html();
+						html += '</div>';						
+						return html;
+					}
+				});
+			}
+
 		</script>
 	</body>
 </html>
