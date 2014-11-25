@@ -112,13 +112,13 @@ class Account(BackendDocument):
 class Device(BackendDocument):
 	__collection__ = 'devices'
 	structure = {
-		'uuid': basestring,
+		'udid': basestring,
 		'deviceInfo': dict,
 		'accounts': [Account]
 	}
-	required_fields = ['uuid', 'accounts', 'deviceInfo']
+	required_fields = ['udid', 'accounts', 'deviceInfo']
 	indexes = [{
-		'fields':['uuid'],
+		'fields':['udid'],
 		'unique':True,
 	}]
 
@@ -176,7 +176,7 @@ class Job(BackendDocument):
 		if 'worker' in self and self.worker:
 			cp['worker'] = str(self.worker['_id'])
 		if 'device' in self and self.device:
-			cp['device'] = str(self.device['uuid'])
+			cp['device'] = str(self.device['udid'])
 		return cp
 
 	@classmethod
@@ -195,11 +195,11 @@ class Job(BackendDocument):
 
 		if 'device' in docDict:
 			deviceId = docDict['device']
-			device = db.Device.find_one({'uuid':deviceId})
+			device = db.Device.find_one({'udid':deviceId})
 			if device:
 				docDict['device'] = device
 			else:
-				logger.debug('given string %s is not a device uuid' % deviceId)
+				logger.debug('given string %s is not a device udid' % deviceId)
 				try:
 					deviceId = ObjectId(deviceId)
 				except InvalidId:

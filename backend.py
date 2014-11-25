@@ -205,7 +205,7 @@ def get_apps_ipa(objid):
 	return response_file(app.fs.get_last_version(filename=filename), filename='%s.ipa' % app.bundleId)
 
 
-@app.route('/apps/<ObjectId:objid>/ipa', methods=["POST"])
+@app.route('/apps/<ObjectId:objid>/ipa', methods=["POST", "PUT"])
 def post_apps_ipa(objid):
 	files = request.files
 	if not files:
@@ -214,10 +214,14 @@ def post_apps_ipa(objid):
 		abort(400, 'invaild file data (please send exactly one file)')
 
 	app = _get_apps_id_doc(objid)
+	filename = str(objid)+'.ipa'
+	
+	if app.fs.exists({'filename': filename}):
+		abort(400, 'file already present')
+		
 	ipa = files.values()[0]
 	app.save()
 
-	filename = str(objid)+'.ipa'
 	f = app.fs.new_file(filename)
 	f.write(ipa)
 	f.close()
@@ -303,8 +307,8 @@ def get_jobs():
 
 
 # this method will return a suitable job for given worker and device or fail with 204 if currently no job available
-@app.route('/jobs/getandsetworker/<ObjectId:workerId>/device/<deviceUUID>', methods=["GET"])
-def get_and_set_worker(workerId, deviceUUID):
+@app.route('/jobs/getandsetworker/<ObjectId:workerId>/device/<deviceUDID>', methods=["GET"])
+def get_and_set_worker(workerId, deviceUDID):
 	jobFound = False
 
 	worker = db.Worker.get_or_404(workerId)
@@ -312,7 +316,7 @@ def get_and_set_worker(workerId, deviceUUID):
 	# use this DBRef instead of the worker doc due to $set is unable to set documents
 #	logger.debug('worker found: %s' % str(worker['_id']))
 
-	device = db.Device.find_one_or_404({'uuid': deviceUUID})
+	device = db.Device.find_one_or_404({'udid': deviceUDID})
 	deviceRef = DBRef(collection=device.__collection__, id=device['_id'], database=device.__database__)
 	# use this DBRef instead of the device doc due to $set is unable to set documents
 #	logger.debug('device found: %s' % str(device['_id']))
@@ -828,12 +832,12 @@ def get_devices():
 	cursor = db.Device.find(query)
 	if not cursor or cursor.count() == 0:
 		abort(404, 'No results found for given criteria')
-	return response_doc_list(cursor, 'uuid')
+	return response_doc_list(cursor, 'udid')
 
 
-@app.route('/devices/<uuid>', methods=["GET"])
-def get_device_uuid(uuid):
-	doc = db.Device.find_one_or_404({'uuid':uuid})
+@app.route('/devices/<udid>', methods=["GET"])
+def get_device_udid(udid):
+	doc = db.Device.find_one_or_404({'udid':udid})
 	return response_doc(doc)
 
 
@@ -843,8 +847,8 @@ def post_device():
 	data = dev.rebuild_doc_dict(db, request.json)
 	if not data:
 		abort(400, 'No data received')
-	if 'uuid' in data:
-		dbDev = db.Device.find_one({'uuid': data['uuid']})
+	if 'udid' in data:
+		dbDev = db.Device.find_one({'udid': data['udid']})
 		if dbDev:
 			dev = dbDev
 	dev.update(data)
@@ -855,7 +859,7 @@ def post_device():
 		abort(400, str(e))
 	return response({
 		"message": "OK",
-		"deviceId": str(dev['uuid'])
+		"deviceId": str(dev['udid'])
 	})
 
 

@@ -160,7 +160,7 @@ function loadDevices() {
 	$.getJSON("devices", function(data) {
 		deviceData = data;
 		$.each(data, function(key, val) {
-			item = '<option value="' + val.uuid + '">' + val.deviceInfo.DeviceName + '</option>';
+			item = '<option value="' + val.udid + '">' + val.deviceInfo.DeviceName + '</option>';
 			$('.deviceSelect').append(item);
 		});
 	});
